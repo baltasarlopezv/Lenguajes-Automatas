@@ -40,7 +40,7 @@ class AF:
         return af
 
     @staticmethod
-    def epsilon():
+    def espontaneo():
         """Crea un autómata que acepta solo la cadena vacía"""
         af = AF()
         q = af.nuevo_estado()
@@ -70,12 +70,12 @@ class AF:
         # El estado final es el de la segunda alternativa
         af.finales = otro.finales
 
-        # Conectamos el estado inicial con el inicial del otro autómata mediante epsilon
-        af.transiciones.append((af.inicial, 'ε', otro.inicial))
-        # Conectamos los estados finales de self con los finales de otro mediante epsilon
+        # Conectamos el estado inicial con el inicial del otro autómata mediante espontaneo
+        af.transiciones.append((af.inicial, 'λ', otro.inicial))
+        # Conectamos los estados finales de self con los finales de otro mediante espontaneo
         for fin in self.finales:
             for fin_otro in otro.finales:
-                af.transiciones.append((fin, 'ε', fin_otro))
+                af.transiciones.append((fin, 'λ', fin_otro))
 
         return af
 
@@ -87,7 +87,7 @@ class AF:
         af.transiciones.extend(otro.transiciones)
 
         for fin in self.finales:
-            af.transiciones.append((fin, 'ε', otro.inicial))
+            af.transiciones.append((fin, 'λ', otro.inicial))
 
         af.inicial = self.inicial
         af.finales = otro.finales
@@ -103,12 +103,12 @@ class AF:
         af.estados.update(self.estados)
         af.transiciones.extend(self.transiciones)
 
-        af.transiciones.append((i, 'ε', self.inicial))
-        af.transiciones.append((i, 'ε', f))
+        af.transiciones.append((i, 'λ', self.inicial))
+        af.transiciones.append((i, 'λ', f))
 
         for fin in self.finales:
-            af.transiciones.append((fin, 'ε', self.inicial))
-            af.transiciones.append((fin, 'ε', f))
+            af.transiciones.append((fin, 'λ', self.inicial))
+            af.transiciones.append((fin, 'λ', f))
 
         return af
 
@@ -136,8 +136,8 @@ def parsear(exp):
     # Casos base especiales
     if exp == "":
         return AF.vacio()  # Expresión vacía = lenguaje vacío
-    if exp == "ε":
-        return AF.epsilon()  # Solo epsilon = acepta cadena vacía
+    if exp == "λ":
+        return AF.espontaneo()  # Solo espontaneo = acepta cadena vacía
     
     def prioridad(op):
         if op == '*': return 3
@@ -151,7 +151,7 @@ def parsear(exp):
         for i in range(len(exp)):
             nueva += exp[i]
             if i+1 < len(exp):
-                if (exp[i] in string.ascii_letters or exp[i] == ')' or exp[i] == '*' or exp[i] == 'ε') and (exp[i+1] in string.ascii_letters or exp[i+1] == '(' or exp[i+1] == 'ε'):
+                if (exp[i] in string.ascii_letters or exp[i] == ')' or exp[i] == '*' or exp[i] == 'λ') and (exp[i+1] in string.ascii_letters or exp[i+1] == '(' or exp[i+1] == 'λ'):
                     nueva += '.'
         return nueva
 
@@ -162,8 +162,8 @@ def parsear(exp):
     for c in exp:
         if c in string.ascii_letters:
             salida.append(AF.simbolo(c))
-        elif c == 'ε':
-            salida.append(AF.epsilon())
+        elif c == 'λ':
+            salida.append(AF.espontaneo())
         elif c == '(':
             operadores.append(c)
         elif c == ')':
@@ -200,6 +200,6 @@ def aplicar_operador(pila, op):
 
 
 # Ejemplo de uso:
-expresion = "ε"
+expresion = "(ab+ba)"
 af = parsear(expresion)
 af.graficar("automa_kleene")
