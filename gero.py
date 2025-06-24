@@ -39,6 +39,25 @@ class AF:
         af.transiciones.append((i, simbolo, f))
         return af
 
+    @staticmethod
+    def epsilon():
+        """Crea un autómata que acepta solo la cadena vacía"""
+        af = AF()
+        q = af.nuevo_estado()
+        af.inicial = q
+        af.finales = {q}  # El mismo estado es inicial y final
+        # No se necesitan transiciones
+        return af
+
+    @staticmethod
+    def vacio():
+        """Crea un autómata que no acepta ninguna cadena (lenguaje vacío)"""
+        af = AF()
+        i = af.nuevo_estado()
+        af.inicial = i
+        af.finales = set()  # Sin estados finales
+        return af
+
     def unir(self, otro):
         af = AF()
         af.estados.update(self.estados)
@@ -114,6 +133,12 @@ class AF:
 
 # Parser simple para expresiones regulares con +, *, () y concatenación implícita
 def parsear(exp):
+    # Casos base especiales
+    if exp == "":
+        return AF.vacio()  # Expresión vacía = lenguaje vacío
+    if exp == "ε":
+        return AF.epsilon()  # Solo epsilon = acepta cadena vacía
+    
     def prioridad(op):
         if op == '*': return 3
         if op == '.': return 2
@@ -126,7 +151,7 @@ def parsear(exp):
         for i in range(len(exp)):
             nueva += exp[i]
             if i+1 < len(exp):
-                if (exp[i] in string.ascii_letters or exp[i] == ')' or exp[i] == '*') and (exp[i+1] in string.ascii_letters or exp[i+1] == '('):
+                if (exp[i] in string.ascii_letters or exp[i] == ')' or exp[i] == '*' or exp[i] == 'ε') and (exp[i+1] in string.ascii_letters or exp[i+1] == '(' or exp[i+1] == 'ε'):
                     nueva += '.'
         return nueva
 
@@ -137,6 +162,8 @@ def parsear(exp):
     for c in exp:
         if c in string.ascii_letters:
             salida.append(AF.simbolo(c))
+        elif c == 'ε':
+            salida.append(AF.epsilon())
         elif c == '(':
             operadores.append(c)
         elif c == ')':
@@ -173,6 +200,6 @@ def aplicar_operador(pila, op):
 
 
 # Ejemplo de uso:
-expresion = "(a*b+c)"
+expresion = "ε"
 af = parsear(expresion)
 af.graficar("automa_kleene")
